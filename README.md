@@ -1,14 +1,16 @@
-# Welcome to your CDK TypeScript project
+# Camplify - CDK Constructs for Amplify Libraries
 
-This is a blank project for CDK development with TypeScript.
+Camplify is a collection of CDK constructs that make it easy to use Amplify Libraries in your CDK projects.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-## Useful commands
+Each construct has a 'vals' property that can be used with other constructs (Ex. In order to use Storage with Auth)
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+Transfer these vals to your UI through env vars and create a faux aws-exports file before building the UI:
+
+`pre_build:`
+
+`	commands:`
+
+`		- "echo '{\"VAR1\":\"'$VAR1'\", \"VAR2\":\"'$VAR2'\", ...}'"`
+
+`		- "echo '{\"VAR1\":\"'$VAR1'\", \"VAR2\":\"'$VAR2'\", ...}' >> cdk-exports.json"`
