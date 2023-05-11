@@ -45,7 +45,7 @@ export class Auth extends NestedStack {
       identityPoolName: `${props.appName}-camplify-identities`,
       allowUnauthenticatedIdentities: props.allowUnauth ?? false
     })
-    idpPool.addUserPoolAuthentication(new UserPoolAuthenticationProvider({ userPool: usrPool }))
+    idpPool.addUserPoolAuthentication(new UserPoolAuthenticationProvider({ userPool: usrPool, userPoolClient: webClient }))
 
     const vals: AuthVals = {
       userPool: usrPool, webClient: webClient, identityPool: idpPool
