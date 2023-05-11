@@ -1,9 +1,9 @@
 import { Construct } from 'constructs';
-import { aws_cognito as cognito } from 'aws-cdk-lib';
+import { NestedStack, NestedStackProps, aws_cognito as cognito } from 'aws-cdk-lib';
 import { IdentityPool, UserPoolAuthenticationProvider } from '@aws-cdk/aws-cognito-identitypool-alpha'
 
 // Construct Inputs
-export interface AuthProps {
+export interface AuthProps extends NestedStackProps {
   appName: string,
   allowUnauth?: boolean,
   selfSignUpEnabled?: boolean,
@@ -20,7 +20,7 @@ export interface AuthVals {
   userPool: cognito.IUserPool, identityPool: IdentityPool, webClient: cognito.UserPoolClient
 }
 
-export class Auth extends Construct {
+export class Auth extends NestedStack {
   constructor(scope: Construct, id: string, props: AuthProps) {
     super(scope, id);
 

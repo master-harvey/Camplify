@@ -1,9 +1,9 @@
 import { Construct } from 'constructs';
-import { aws_s3 as s3, aws_iam as iam, aws_cognito as cognito } from 'aws-cdk-lib';
+import { NestedStack, NestedStackProps, aws_s3 as s3, aws_iam as iam, aws_cognito as cognito } from 'aws-cdk-lib';
 import { AuthVals } from './Auth';
 
 // Construct Inputs
-export interface StorageProps {
+export interface StorageProps extends NestedStackProps {
   appName: string,
   auth?: AuthVals,
   cors?: [s3.CorsRule],
@@ -13,7 +13,7 @@ export interface StorageProps {
 // Construct Outputs (for the UI)
 export interface StorageVals { bucket: s3.Bucket }
 
-export class Storage extends Construct {
+export class Storage extends NestedStack {
   constructor(scope: Construct, id: string, props: StorageProps) {
     super(scope, id);
 
