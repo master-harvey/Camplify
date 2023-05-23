@@ -17,7 +17,9 @@ export interface AuthProps extends NestedStackProps {
 
 // Construct Outputs (for the UI)
 export interface AuthVals {
-  userPool: cognito.IUserPool, identityPool: IdentityPool, webClient: cognito.UserPoolClient
+  userPool: cognito.IUserPool,
+  identityPool: IdentityPool,
+  webClient: cognito.UserPoolClient
 }
 
 export class Auth extends NestedStack {
