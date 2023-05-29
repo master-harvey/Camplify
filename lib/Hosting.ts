@@ -1,17 +1,19 @@
 import { Construct } from 'constructs';
 import {
     NestedStack, NestedStackProps,
-    RemovalPolicy, CfnOutput, Duration,
+    RemovalPolicy, CfnOutput,
     aws_s3 as s3, aws_cloudfront as cf,
     aws_cloudfront_origins as cfo,
-    aws_certificatemanager as cm,
     aws_lambda as lambda,
+    aws_certificatemanager as cm,
     aws_route53 as r53,
     aws_secretsmanager as sm,
     aws_codepipeline as codepipeline,
     aws_codepipeline_actions as cpa,
-    aws_codebuild as cbd,
+    aws_codebuild as cbd
 } from 'aws-cdk-lib';
+
+import { AuthVals, StorageVals } from '.';
 
 // Construct Inputs
 export interface HostingProps extends NestedStackProps {
@@ -20,12 +22,16 @@ export interface HostingProps extends NestedStackProps {
     repo: string,
     branch: string,
     gitOwner: string,
-    buildEnvironment?: { [name: string]: cbd.BuildEnvironmentVariable }
+    buildEnvironment?: { [name: string]: cbd.BuildEnvironmentVariable },
+    camplifyVals?: { //"vals" attribute from each Camplify stack object
+        AuthVals?: AuthVals,
+        StorageVals?: StorageVals,
+    }
 }
 
 //All outputs declared as CfnOutputs
 
-export class Analytics extends NestedStack {
+export class Hosting extends NestedStack {
     constructor(scope: Construct, id: string, props: HostingProps) {
         super(scope, id);
 
@@ -114,30 +120,29 @@ export class Analytics extends NestedStack {
             input: builtCode
         }))
 
-        // Create the build project that will invalidate the cache
-        const invalidateBuildProject = new cbd.PipelineProject(this, `InvalidateProject`, {
-            projectName: `${props.appName}-invalidate`, description: `Invalidate ${props.appName} Interface distribution`,
-            buildSpec: cbd.BuildSpec.fromObject({
-                version: '0.2',
-                phases: {
-                    build: {
-                        commands: [
-                            'aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_ID} --paths "/*"',
-                        ],
-                    },
-                },
-            }),
-            environmentVariables: {
-                CLOUDFRONT_ID: { value: distribution.distributionId },
-            },
+        // Lambda that will invalidate the cache
+        const invalidateCacheLambda = new lambda.Function(this, "invalidate", {
+            functionName: `${props.appName}--Interface-Invalidator`, handler: "index.handler",
+            code: lambda.Code.fromInline(invalidateFunctionCode), runtime: lambda.Runtime.NODEJS_18_X
+        })
+        const CIinvalidateStage = buildPipeline.addStage({
+            stageName: 'InvalidateCloudfrontCache',
+            actions: [new cpa.LambdaInvokeAction({ actionName: 'InvalidateCache', lambda: invalidateCacheLambda })]
         });
-        deployStage.addAction(new cpa.CodeBuildAction({
-            actionName: 'InvalidateCache',
-            project: invalidateBuildProject,
-            input: builtCode,
-            runOrder: 2,
-        }))
         // Interface Pipeline \\
         new CfnOutput(this, "Dist URL", { value: distribution.distributionDomainName, description: "Distribution URL" })
     }
 }
+
+const invalidateFunctionCode = `const AWS = require('aws-sdk')
+
+exports.handler = function (event, context) {
+    const cloudfront = new AWS.CloudFront()
+    return cloudfront.createInvalidation({
+        DistributionId: process.env.CLOUDFRONT_ID,
+        InvalidationBatch: {
+            CallerReference: new Date().getTime().toString(),
+            Paths: { Quantity: 1, Items: ['*'] }
+        }
+    })
+}`
