@@ -5,3 +5,4 @@ export * from "./AppSync";
 export * from "./Rest";
 export * from "./Geo";
 export * from "./PubSub";
+export * from "./Hosting";
