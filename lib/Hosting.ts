@@ -22,7 +22,8 @@ export interface HostingProps extends NestedStackProps {
     repo: string,
     branch: string,
     gitOwner: string,
-    buildEnvironment?: { [name: string]: cbd.BuildEnvironmentVariable },
+    customBuildSpec?: cbd.BuildSpec,
+    buildEnvironment?: { [key: string]: cbd.BuildEnvironmentVariable },
     camplifyVals?: { //"vals" attribute from each Camplify stack object
         AuthVals?: AuthVals,
         StorageVals?: StorageVals,
@@ -95,12 +96,29 @@ export class Hosting extends NestedStack {
         })
         sourceStage.addAction(gitSource)
 
+        // Pass public variables to the UI
+        var buildVars = { ...props.buildEnvironment }
+        buildVars.region = { value: this.region }
+        //  prepend custom vars with CDK_
+        Object.keys(buildVars).forEach(key => buildVars[`CDK_${key.toUpperCase()}`] = buildVars[key])
+        //  fetch essential vars by name
+        if (props.camplifyVals?.AuthVals) {
+            buildVars['CDK_UPID'] = { value: props.camplifyVals.AuthVals.userPool.userPoolId }
+            buildVars['CDK_WCID'] = { value: props.camplifyVals.AuthVals.webClient.userPoolClientId }
+            buildVars['CDK_IDPID'] = { value: props.camplifyVals.AuthVals.identityPool.identityPoolId }
+        }
+        if (props.camplifyVals?.StorageVals) {
+            buildVars['CDK_STORAGEBUCKET'] = { value: props.camplifyVals.StorageVals.bucket.bucketName }
+        }
+        //  integrate the other stacks here once implemented
+
         const buildStage = buildPipeline.addStage({ stageName: "Build" })
         const buildProject = new cbd.PipelineProject(this, `${props.appName}--Interface-Build-Project`, {
             projectName: `${props.appName}--Interface-Builder`, concurrentBuildLimit: 1,
             description: `Build the Web Interface for the ${props.appName} pipeline`,
             environment: { buildImage: cbd.LinuxBuildImage.STANDARD_5_0 },
-            environmentVariables: props.buildEnvironment
+            buildSpec: props.customBuildSpec ?? cbd.BuildSpec.fromObjectToYaml(sampleBuildSpec),
+            environmentVariables: buildVars
         })
 
         const builtCode = new codepipeline.Artifact()
@@ -134,7 +152,8 @@ export class Hosting extends NestedStack {
     }
 }
 
-const invalidateFunctionCode = `const AWS = require('aws-sdk')
+const invalidateFunctionCode = `\
+const AWS = require('aws-sdk')
 
 exports.handler = function (event, context) {
     const cloudfront = new AWS.CloudFront()
@@ -145,4 +164,27 @@ exports.handler = function (event, context) {
             Paths: { Quantity: 1, Items: ['*'] }
         }
     })
-}`
+}\
+`
+
+const sampleBuildSpec = {
+    version: 0.2,
+    phases: {
+        install: {
+            commands: ["npm i"]
+        },
+        pre_build: {
+            commands: [
+                "env | grep '^CDK_' | jq -Rn '[inputs | split(\"=\") | {(.[0][4:]): .[1]}] | add' > cdk-exports.json",
+                "cat cdk-exports.json"
+            ]
+        },
+        build: {
+            commands: ["npm run build"]
+        }
+    },
+    artifacts: {
+        baseDirectory: "dist",
+        files: "**/*"
+    }
+}
