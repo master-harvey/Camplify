@@ -7,7 +7,7 @@ export interface AuthProps extends NestedStackProps {
   appName: string,
   allowUnauth?: boolean,
   selfSignUpEnabled?: boolean,
-  mfa: cognito.Mfa,
+  mfa?: cognito.Mfa,
   preventUserExistenceErrors?: boolean,
   mfaSecondFactor?: { sms: boolean, otp: boolean },
   accountRecovery?: cognito.AccountRecovery,
