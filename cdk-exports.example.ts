@@ -1,51 +1,52 @@
 export const cdkExports = {
-  aws_project_region: "us-east-1", // (optional) Default region for project
+  aws_project_region: process.env.REGION, // (optional) Default region for project
 
 
+  
   Auth: {
     // (required) only for Federated Authentication - Amazon Cognito Identity Pool ID
-    identityPoolId: 'XX-XXXX-X:XXXXXXXX-XXXX-1234-abcd-1234567890ab',
+    identityPoolId: process.env.IDPID,
 
     // (required)- Amazon Cognito Region
-    region: 'XX-XXXX-X',
+    region: process.env.REGION,
 
     // (optional) - Amazon Cognito Federated Identity Pool Region
     // Required only if it's different from Amazon Cognito Region
-    identityPoolRegion: 'XX-XXXX-X',
+    //identityPoolRegion: 'XX-XXXX-X',
 
     // (optional) - Amazon Cognito User Pool ID
-    userPoolId: 'XX-XXXX-X_abcd1234',
+    userPoolId: process.env.UPID,
 
     // (optional) - Amazon Cognito Web Client ID (26-char alphanumeric string, App client secret needs to be disabled)
-    userPoolWebClientId: 'a1b2c3d4e5f6g7h8i9j0k1l2m3',
+    userPoolWebClientId: process.env.WCID,
 
     // (optional) - Enforce user authentication prior to accessing AWS resources or not
-    mandatorySignIn: false,
+    //mandatorySignIn: false,
 
     // (optional) - Configuration for cookie storage
     // Note: if the secure flag is set to true, then the cookie transmission requires a secure protocol
-    cookieStorage: {
-      // - Cookie domain (only required if cookieStorage is provided)
-      domain: '.yourdomain.com',
-      // (optional) - Cookie path
-      path: '/',
-      // (optional) - Cookie expiration in days
-      expires: 365,
-      // (optional) - See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
-      sameSite: 'strict', // 'lax',
-      // (optional) - Cookie secure flag
-      // Either true or false, indicating if the cookie transmission requires a secure protocol (https).
-      secure: true
-    },
+    // cookieStorage: {
+    //   // - Cookie domain (only required if cookieStorage is provided)
+    //   domain: '.yourdomain.com',
+    //   // (optional) - Cookie path
+    //   path: '/',
+    //   // (optional) - Cookie expiration in days
+    //   expires: 365,
+    //   // (optional) - See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite
+    //   sameSite: 'strict', // 'lax',
+    //   // (optional) - Cookie secure flag
+    //   // Either true or false, indicating if the cookie transmission requires a secure protocol (https).
+    //   secure: true
+    // },
 
     // (optional) - customized storage object
-    storage: {},
+    //storage: {},
 
     // (optional) - Manually set the authentication flow type. Default is 'USER_SRP_AUTH'
     authenticationFlowType: 'USER_PASSWORD_AUTH',
 
     // (optional) - Manually set key value pairs that can be passed to Cognito Lambda Triggers
-    clientMetadata: { myCustomKey: 'myCustomValue' },
+    //clientMetadata: { myCustomKey: 'myCustomValue' },
 
     // (optional) - Hosted UI configuration
     oauth: {
@@ -57,20 +58,22 @@ export const cdkExports = {
         'openid',
         'aws.cognito.signin.user.admin'
       ],
-      redirectSignIn: 'http://localhost:3000/',
-      redirectSignOut: 'http://localhost:3000/',
-      clientId: '1g0nnr4h99a3sd0vfs9',
+      // redirectSignIn: 'http://localhost:3000/',
+      // redirectSignOut: 'http://localhost:3000/',
+      clientId: process.env.WCID,
       responseType: 'code' // or 'token', note that REFRESH token will only be generated when the responseType is code
     }
   },
 
 
+
   Storage: {
     AWSS3: {
-      bucket: 'testappa321fb906f7f4ae6a4d25d8cd2134338123152-dev', // (required) -  Amazon S3 bucket name
-      region: 'us-east-1' // (optional) -  Amazon service region
+      bucket: process.env.STORAGEBUCKET, // (required) -  Amazon S3 bucket name
+      region: process.env.REGION // (optional) -  Amazon service region
     }
   },
+
 
 
   API: { // GRAPHQL API's
@@ -79,6 +82,7 @@ export const cdkExports = {
       'My-Custom-Header': 'my value' // Set Custom Request Headers for non-AppSync GraphQL APIs
     })
   },
+
 
   
   aws_cloud_logic_custom: [ // REST API's
@@ -90,6 +94,7 @@ export const cdkExports = {
   ],
 
   
+
   predictions: {
     convert: {
       translateText: {
@@ -153,6 +158,7 @@ export const cdkExports = {
   },
 
   
+
   Interactions: {
     bots: {
       BookTrip: {
@@ -162,6 +168,7 @@ export const cdkExports = {
       }
     }
   },
+
 
   
   Analytics: {
@@ -234,6 +241,7 @@ export const cdkExports = {
       resendLimit: 5
     }
   },
+
 
   
   geo: {
