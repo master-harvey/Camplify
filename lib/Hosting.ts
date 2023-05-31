@@ -40,7 +40,7 @@ export class Hosting extends NestedStack {
         const token = sm.Secret.fromSecretNameV2(this, 'githubToken', 'github-token')
 
         const bucket = new s3.Bucket(this, "InterfaceBucket", {
-            bucketName: `${props.appName}--interface`,
+            bucketName: `${props.appName.toLowerCase()}--interface`,
             websiteIndexDocument: 'index.html',
             removalPolicy: RemovalPolicy.DESTROY,
             autoDeleteObjects: true
