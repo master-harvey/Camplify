@@ -8,6 +8,7 @@
     "watch": "tsc -w",
     "test": "jest"
   },
+  "files": ["./lib"],
   "devDependencies": {
     "@types/jest": "^29.4.0",
     "@types/node": "18.14.6",
