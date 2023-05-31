@@ -1,24 +1,25 @@
+//https://docs.amplify.aws/lib/client-configuration/configuring-amplify-categories/q/platform/js/
 export const cdkExports = {
-  aws_project_region: process.env.REGION, // (optional) Default region for project
+  aws_project_region: awsExports.REGION, // (optional) Default region for project
 
 
   
   Auth: {
     // (required) only for Federated Authentication - Amazon Cognito Identity Pool ID
-    identityPoolId: process.env.IDPID,
+    identityPoolId: awsExports.IDPID,
 
     // (required)- Amazon Cognito Region
-    region: process.env.REGION,
+    region: awsExports.REGION,
 
     // (optional) - Amazon Cognito Federated Identity Pool Region
     // Required only if it's different from Amazon Cognito Region
     //identityPoolRegion: 'XX-XXXX-X',
 
     // (optional) - Amazon Cognito User Pool ID
-    userPoolId: process.env.UPID,
+    userPoolId: awsExports.UPID,
 
     // (optional) - Amazon Cognito Web Client ID (26-char alphanumeric string, App client secret needs to be disabled)
-    userPoolWebClientId: process.env.WCID,
+    userPoolWebClientId: awsExports.WCID,
 
     // (optional) - Enforce user authentication prior to accessing AWS resources or not
     //mandatorySignIn: false,
@@ -60,7 +61,7 @@ export const cdkExports = {
       ],
       // redirectSignIn: 'http://localhost:3000/',
       // redirectSignOut: 'http://localhost:3000/',
-      clientId: process.env.WCID,
+      clientId: awsExports.WCID,
       responseType: 'code' // or 'token', note that REFRESH token will only be generated when the responseType is code
     }
   },
@@ -69,8 +70,8 @@ export const cdkExports = {
 
   Storage: {
     AWSS3: {
-      bucket: process.env.STORAGEBUCKET, // (required) -  Amazon S3 bucket name
-      region: process.env.REGION // (optional) -  Amazon service region
+      bucket: awsExports.STORAGEBUCKET, // (required) -  Amazon S3 bucket name
+      region: awsExports.REGION // (optional) -  Amazon service region
     }
   },
 
