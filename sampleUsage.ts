@@ -2,7 +2,7 @@ import { Stack, StackProps, RemovalPolicy, Duration, CfnOutput } from 'aws-cdk-l
 import { Construct } from 'constructs';
 import { Auth, Storage, Hosting } from 'camplify'
 
-export class SecureShareStack extends Stack {
+export class YourStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
         const appName = "Test"
