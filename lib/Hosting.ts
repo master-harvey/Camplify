@@ -177,6 +177,7 @@ const sampleBuildSpec = {
         },
         pre_build: {
             commands: [
+                "cd src",
                 "env | grep '^CDK_' | jq -Rn '[inputs | split(\"=\") | {(.[0][4:]): .[1]}] | add' > cdk-exports.json",
                 "cat cdk-exports.json"
             ]
