@@ -49,8 +49,8 @@ export class Auth extends NestedStack {
     })
     idpPool.addUserPoolAuthentication(new UserPoolAuthenticationProvider({ userPool: usrPool, userPoolClient: webClient }))
 
-    const vals: AuthVals = {
-      userPool: usrPool, webClient: webClient, identityPool: idpPool
-    }
+    this.vals = { userPool: usrPool, webClient: webClient, identityPool: idpPool }
   }
+  
+  vals: AuthVals
 }

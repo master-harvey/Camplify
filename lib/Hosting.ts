@@ -99,8 +99,10 @@ export class Hosting extends NestedStack {
         // Pass public variables to the UI
         var buildVars = { ...props.buildEnvironment }
         buildVars.region = { value: this.region }
+
         //  prepend custom vars with CDK_
-        Object.keys(buildVars).forEach(key => buildVars[`CDK_${key.toUpperCase()}`] = buildVars[key])
+        Object.keys(buildVars).forEach(key => buildVars[`CDK_${key.toUpperCase()}`] = { value: buildVars[key] })
+
         //  fetch essential vars by name
         if (props.camplifyVals?.AuthVals) {
             buildVars['CDK_UPID'] = { value: props.camplifyVals.AuthVals.userPool.userPoolId }

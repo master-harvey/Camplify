@@ -110,7 +110,8 @@ export class Storage extends NestedStack {
       ],
     }))
 
-
-    const vals: StorageVals = { bucket }
+    this.vals = { bucket }
   }
+  
+  vals: StorageVals
 }
