@@ -1,5 +1,5 @@
 {
-  "name": "ci",
+  "name": "camplify-ci",
   "version": "0.1.0",
   "bin": {
     "ci": "bin/ci.js"
