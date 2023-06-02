@@ -74,7 +74,6 @@ export class Hosting extends NestedStack {
                 { errorCode: 404, responseCode: 200, responsePagePath: '/index.html' },
             ]
         })
-        new CfnOutput(this, "Dist URL", { value: distribution.distributionDomainName, description: `${props.appName} Interface Distribution URL` })
 
         // Interface Pipeline \\
         const buildPipeline = new codepipeline.Pipeline(this, "InterfaceDeploymentPipeline", {
@@ -150,7 +149,7 @@ export class Hosting extends NestedStack {
             actions: [new cpa.LambdaInvokeAction({ actionName: 'InvalidateCache', lambda: invalidateCacheLambda })]
         });
         // Interface Pipeline \\
-        new CfnOutput(this, "Dist URL", { value: distribution.distributionDomainName, description: "Distribution URL" })
+        new CfnOutput(this, "Dist URL", { value: distribution.distributionDomainName, description: `${props.appName} Interface Distribution URL` })
     }
 }
 
