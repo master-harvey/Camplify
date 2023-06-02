@@ -23,7 +23,7 @@ export interface HostingProps extends NestedStackProps {
     gitOwner: string,
     URL?: string,
     customBuildSpec?: cbd.BuildSpec,
-    buildEnvironment?: { [key: string]: cbd.BuildEnvironmentVariable },
+    buildEnvironment?: { [key: string]: string },
     camplifyVals?: { //"vals" attribute from each Camplify stack object
         AuthVals?: AuthVals,
         StorageVals?: StorageVals,
@@ -125,7 +125,7 @@ export class Hosting extends NestedStack {
             buildSpec: props.customBuildSpec ?? cbd.BuildSpec.fromObjectToYaml(sampleBuildSpec),
             environmentVariables: buildVars
         })
-
+        
         const builtCode = new codepipeline.Artifact()
         buildStage.addAction(new cpa.CodeBuildAction({
             actionName: `${props.appName}-Interface--Build-Source`,
@@ -133,16 +133,16 @@ export class Hosting extends NestedStack {
             input: sourceCode,
             outputs: [builtCode]
         }))
-
+        
         //const testStage = cPipeline.addStage({ stageName: "Test" })
-
+        
         const deployStage = buildPipeline.addStage({ stageName: "Deploy" })
         deployStage.addAction(new cpa.S3DeployAction({
             actionName: `${props.appName}-S3Deploy`,
             bucket: bucket,
             input: builtCode
         }))
-
+        
         // Lambda that will invalidate the cache
         const invalidateCacheLambda = new lambda.Function(this, "invalidate", {
             functionName: `${props.appName}--Interface-Invalidator`, handler: "index.handler",
@@ -153,7 +153,9 @@ export class Hosting extends NestedStack {
             actions: [new cpa.LambdaInvokeAction({ actionName: 'InvalidateCache', lambda: invalidateCacheLambda })]
         });
         // Interface Pipeline \\
+
         new CfnOutput(this, "Dist URL", { value: distribution.distributionDomainName, description: `${props.appName} Interface Distribution URL` })
+        new CfnOutput(this, "cdk-exports", { value: JSON.stringify(buildVars), description: "cdk-exports.json" })
     }
 }
 
