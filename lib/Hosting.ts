@@ -18,10 +18,10 @@ import { AuthVals, StorageVals } from '.';
 // Construct Inputs
 export interface HostingProps extends NestedStackProps {
     appName: string,
-    URL: string,
     repo: string,
     branch: string,
     gitOwner: string,
+    URL?: string,
     customBuildSpec?: cbd.BuildSpec,
     buildEnvironment?: { [key: string]: cbd.BuildEnvironmentVariable },
     camplifyVals?: { //"vals" attribute from each Camplify stack object
