@@ -7,7 +7,7 @@ export class TestStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        const appName = "Test"
+        const appName = "CamplifyTest"
         const Authentication = new Auth(this, "Authentication", { appName })
         const AppStorage = new Storage(this, "AppStorage", { appName, auth: Authentication.vals })
         //Other Camplify stacks as they're integrated
