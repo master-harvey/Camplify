@@ -49,21 +49,25 @@ export class Hosting extends NestedStack {
         // Distribution
         const oai = new cf.OriginAccessIdentity(this, "OAI", { comment: `${props.appName} OAI` })
         bucket.grantRead(oai)
-        const zone = new r53.HostedZone(this, "HostedZone", { zoneName: props.URL })
-        const cert = new cm.Certificate(this, "Distribution-Cert", {
-            domainName: props.URL,
-            certificateName: `${props.appName}`,
-            validation: cm.CertificateValidation.fromDns(zone)
-        })
-        const distribution = new cf.CloudFrontWebDistribution(this, 'Distribution', {
-            viewerCertificate: {
+        let certInput;
+        if (props.URL) {
+            const zone = new r53.HostedZone(this, "HostedZone", { zoneName: props.URL })
+            const cert = new cm.Certificate(this, "Distribution-Cert", {
+                domainName: props.URL,
+                certificateName: `${props.appName}`,
+                validation: cm.CertificateValidation.fromDns(zone)
+            })
+            certInput = {
                 aliases: [props.URL],
                 props: {
                     acmCertificateArn: cert.certificateArn,
                     sslSupportMethod: 'sni-only',
                     minimumProtocolVersion: 'TLSv1.1_2016'
                 }
-            },
+            }
+        }
+        const distribution = new cf.CloudFrontWebDistribution(this, 'Distribution', {
+            viewerCertificate: certInput ?? undefined,
             originConfigs: [
                 {
                     s3OriginSource: { s3BucketSource: bucket, originAccessIdentity: oai },
