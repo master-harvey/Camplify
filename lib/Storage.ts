@@ -1,5 +1,5 @@
 import { Construct } from 'constructs';
-import { NestedStack, NestedStackProps, aws_s3 as s3, aws_iam as iam, aws_cognito as cognito } from 'aws-cdk-lib';
+import { NestedStack, NestedStackProps, aws_s3 as s3, aws_iam as iam, RemovalPolicy } from 'aws-cdk-lib';
 import { AuthVals } from './Auth';
 
 // Construct Inputs
@@ -7,7 +7,8 @@ export interface StorageProps extends NestedStackProps {
   appName: string,
   auth: AuthVals,
   cors?: [s3.CorsRule],
-  allowedOrigins?: [string]
+  allowedOrigins?: [string],
+  removalPolicy?: RemovalPolicy
 }
 
 // Construct Outputs (for the UI)
@@ -19,6 +20,7 @@ export class Storage extends NestedStack {
 
     const bucket = new s3.Bucket(this, "StorageBucket", {
       bucketName: `${props.appName.toLowerCase()}-camplify-storage`,
+      removalPolicy: props.removalPolicy ?? RemovalPolicy.DESTROY,
       cors: props.cors ?? [
         {
           allowedHeaders: ["*"],
