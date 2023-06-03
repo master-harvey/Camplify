@@ -23,7 +23,7 @@ export interface HostingProps extends NestedStackProps {
     gitOwner: string,
     URL?: string,
     customBuildSpec?: cbd.BuildSpec,
-    buildEnvironment?: { [key: string]: string },
+    buildEnvironment?: { [key: string]: cbd.BuildEnvironmentVariable },
     camplifyVals?: { //"vals" attribute from each Camplify stack object
         AuthVals?: AuthVals,
         StorageVals?: StorageVals,
@@ -81,9 +81,7 @@ export class Hosting extends NestedStack {
 
         // Interface Pipeline \\
         const buildPipeline = new codepipeline.Pipeline(this, "InterfaceDeploymentPipeline", {
-            pipelineName: `${props.appName}--Interface-Deployment-Pipeline`,
-            crossAccountKeys: false,
-            artifactBucket: bucket
+            pipelineName: `${props.appName}--Interface-Deployment-Pipeline`, crossAccountKeys: false
         })
 
         const sourceStage = buildPipeline.addStage({ stageName: "Source" })
@@ -100,11 +98,11 @@ export class Hosting extends NestedStack {
         sourceStage.addAction(gitSource)
 
         // Pass public variables to the UI
-        var buildVars = { ...props.buildEnvironment }
-        buildVars.region = { value: this.region }
+        let buildVars: { [key: string]: cbd.BuildEnvironmentVariable } = { CDK_REGION: { value: this.region } }
+        var customVars = { ...props.buildEnvironment }
 
         //  prepend custom vars with CDK_
-        Object.keys(buildVars).forEach(key => buildVars[`CDK_${key.toUpperCase()}`] = { value: buildVars[key] })
+        Object.keys(customVars).forEach(key => buildVars[`CDK_${key.toUpperCase()}`] = customVars[key])
 
         //  fetch essential vars by name
         if (props.camplifyVals?.AuthVals) {
@@ -122,10 +120,10 @@ export class Hosting extends NestedStack {
             projectName: `${props.appName}--Interface-Builder`, concurrentBuildLimit: 1,
             description: `Build the Web Interface for the ${props.appName} pipeline`,
             environment: { buildImage: cbd.LinuxBuildImage.STANDARD_5_0 },
-            buildSpec: props.customBuildSpec ?? cbd.BuildSpec.fromObjectToYaml(sampleBuildSpec),
+            buildSpec: props.customBuildSpec ?? cbd.BuildSpec.fromAsset('./buildspec.yml'),
             environmentVariables: buildVars
         })
-        
+
         const builtCode = new codepipeline.Artifact()
         buildStage.addAction(new cpa.CodeBuildAction({
             actionName: `${props.appName}-Interface--Build-Source`,
@@ -133,16 +131,16 @@ export class Hosting extends NestedStack {
             input: sourceCode,
             outputs: [builtCode]
         }))
-        
+
         //const testStage = cPipeline.addStage({ stageName: "Test" })
-        
+
         const deployStage = buildPipeline.addStage({ stageName: "Deploy" })
         deployStage.addAction(new cpa.S3DeployAction({
             actionName: `${props.appName}-S3Deploy`,
             bucket: bucket,
             input: builtCode
         }))
-        
+
         // Lambda that will invalidate the cache
         const invalidateCacheLambda = new lambda.Function(this, "invalidate", {
             functionName: `${props.appName}--Interface-Invalidator`, handler: "index.handler",
@@ -155,7 +153,7 @@ export class Hosting extends NestedStack {
         // Interface Pipeline \\
 
         new CfnOutput(this, "Dist URL", { value: distribution.distributionDomainName, description: `${props.appName} Interface Distribution URL` })
-        new CfnOutput(this, "cdk-exports", { value: JSON.stringify(buildVars), description: "cdk-exports.json" })
+        new CfnOutput(this, "cdkExports", { value: JSON.stringify(buildVars), description: "cdk-exports.json" })
     }
 }
 
@@ -173,26 +171,3 @@ exports.handler = function (event, context) {
     })
 }\
 `
-
-const sampleBuildSpec = {
-    version: 0.2,
-    phases: {
-        install: {
-            commands: ["npm i"]
-        },
-        pre_build: {
-            commands: [
-                "cd src",
-                "env | grep '^CDK_' | jq -Rn '[inputs | split(\"=\") | {(.[0][4:]): .[1]}] | add' > cdk-exports.json",
-                "cat cdk-exports.json"
-            ]
-        },
-        build: {
-            commands: ["npm run build"]
-        }
-    },
-    artifacts: {
-        baseDirectory: "dist",
-        files: "**/*"
-    }
-}
