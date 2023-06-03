@@ -1,0 +1,17 @@
+version: '0.2'
+
+phases:
+  install:
+    commands:
+      - "npm i"
+  pre_build:
+    commands:
+      - "env | grep '^CDK_' | jq -Rn '[inputs | split(\"=\") | {(.[0][4:]): .[1]}] | add' > src/cdk-exports.json"
+      - "cat src/cdk-exports.json"
+  build:
+    commands:
+      - "npm run build"
+artifacts:
+  base-directory: "dist"
+  files: 
+    - "**/*"
