@@ -1,5 +1,6 @@
 import { Stack, StackProps, RemovalPolicy, Duration, CfnOutput } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
+// @ts-ignore
 import { Auth, Storage, Hosting } from 'camplify'
 
 export class YourStack extends Stack {

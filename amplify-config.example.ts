@@ -1,4 +1,5 @@
 //https://docs.amplify.aws/lib/client-configuration/configuring-amplify-categories/q/platform/js/
+// @ts-nocheck
 export const cdkExports = {
   aws_project_region: awsExports.REGION, // (optional) Default region for project
 
