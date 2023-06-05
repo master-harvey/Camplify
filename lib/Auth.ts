@@ -41,7 +41,8 @@ export class Auth extends NestedStack {
       accountRecovery: props.accountRecovery ?? cognito.AccountRecovery.PHONE_AND_EMAIL
     })
     const webClient = usrPool.addClient("UserPoolWebClient", {
-      preventUserExistenceErrors: props.preventUserExistenceErrors ?? true
+      preventUserExistenceErrors: props.preventUserExistenceErrors ?? true,
+      authFlows: { userPassword: true, userSrp: true }
     })
     const idpPool = new IdentityPool(this, "IdentityPool", {
       identityPoolName: `${props.appName}-camplify-identities`,
@@ -51,6 +52,6 @@ export class Auth extends NestedStack {
 
     this.vals = { userPool: usrPool, webClient: webClient, identityPool: idpPool }
   }
-  
+
   vals: AuthVals
 }
