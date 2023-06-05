@@ -33,6 +33,7 @@ export interface HostingProps extends NestedStackProps {
 //All outputs declared as CfnOutputs
 
 export class Hosting extends NestedStack {
+    CDK_EXPORTS = {}
     constructor(scope: Construct, id: string, props: HostingProps) {
         super(scope, id);
 
@@ -153,7 +154,14 @@ export class Hosting extends NestedStack {
         // Interface Pipeline \\
 
         new CfnOutput(this, "Dist URL", { value: distribution.distributionDomainName, description: `${props.appName} Interface Distribution URL` })
-        new CfnOutput(this, "cdkExports", { value: JSON.stringify(buildVars), description: "cdk-exports.json" })
+        //Prune vars object to a single layer for the user
+        const prunedVars = Object.entries(buildVars).reduce((acc: {[key: string]: string}, [key, value]) => {
+            const newKey = key.replace('CDK_', '');
+            acc[newKey] = value.value;
+            return acc;
+        }, {});
+        new CfnOutput(this, "cdkExports", { value: JSON.stringify(prunedVars), description: "cdk-exports.json" })
+        this.CDK_EXPORTS = prunedVars
     }
 }
 
