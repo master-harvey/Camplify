@@ -15,7 +15,7 @@ export class YourStack extends Stack {
 
         const FrontEnd = new Hosting(this, "Hosting", {
             appName, repo: "Camplify", branch: "demo", gitOwner: "master-harvey",
-            URL: "camplifydemo.m-a.cloud",
+            URL: "yoururl.com",
             buildEnvironment: { //Custom Env Vars passed to frontend
                 key1: { value: "value" },
                 key2: { value: "value" }
