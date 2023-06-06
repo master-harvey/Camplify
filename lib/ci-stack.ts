@@ -5,7 +5,8 @@ import {
   aws_secretsmanager as sm,
   aws_apigateway as apigw,
   aws_codepipeline_actions as cpa,
-  aws_iam as iam
+  aws_iam as iam,
+  aws_ssm as ssm
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 
@@ -13,8 +14,9 @@ export class CamplifyCiStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    //Github creds for pipelines
-    const token = sm.Secret.fromSecretNameV2(this, 'githubToken', 'github-token')
+    //Github and NPM creds for pipeline
+    const gitToken = sm.Secret.fromSecretNameV2(this, 'githubToken', 'github-token')
+    const npmToken = ssm.StringParameter.valueForStringParameter(this, 'Camplify-NPM-Access-Token')
 
     // Version Pipeline \\
     const versionPipeline = new codepipeline.Pipeline(this, "VersionTrackerPipeline", { pipelineName: `Camplify-Version-Tracker` })
@@ -22,7 +24,7 @@ export class CamplifyCiStack extends Stack {
     const sourceStage = versionPipeline.addStage({ stageName: "Source" })
     const sourceCode = new codepipeline.Artifact()
     const gitSource = new cpa.GitHubSourceAction({
-      oauthToken: token.secretValue,
+      oauthToken: gitToken.secretValue,
       actionName: `Camplify-Versions--Pull-Source`,
       owner: "master-harvey",
       repo: "Camplify",
@@ -33,12 +35,27 @@ export class CamplifyCiStack extends Stack {
     sourceStage.addAction(gitSource)
 
     const buildStage = versionPipeline.addStage({ stageName: "Build" })
+    const BuildSpec = {
+      version: 0.2,
+      phases: {
+        install: {
+          commands: ["npm ci", "npm update"]
+        },
+        build: {
+          commands: ["npm run build"]
+        },
+        post_build: {
+          commands: [`npm config set _auth=${npmToken}`, "./version_check.sh"]
+        }
+      }
+    }
     const buildProject = new codebuild.PipelineProject(this, `Camplify-Versions-Build-Project`, {
       projectName: `Camplify-Versions-Builder`, concurrentBuildLimit: 1,
       description: `Update Camplify version to match CDK for compatibility`,
       environment: { buildImage: codebuild.LinuxBuildImage.STANDARD_5_0 },
       buildSpec: codebuild.BuildSpec.fromObjectToYaml(BuildSpec),
     })
+    buildProject.addSecondaryArtifact
 
     const builtCode = new codepipeline.Artifact()
     buildStage.addAction(new cpa.CodeBuildAction({
@@ -120,23 +137,5 @@ export class CamplifyCiStack extends Stack {
       }
     )
 
-  }
-}
-
-//Pull library, install latest CDK lib and necessary alpha packages, get camplify package.json version.
-//Check that major version matches, alert if CDKV3 comes out
-//Build
-const BuildSpec = {
-  version: 0.2,
-  phases: {
-    install: {
-      commands: ["npm ci", "npm update"]
-    },
-    build: {
-      commands: ["npm run build"]
-    },
-    post_build: {
-      commands: ["./version_check.sh"]
-    }
   }
 }
