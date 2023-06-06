@@ -45,7 +45,11 @@ export class CamplifyCiStack extends Stack {
           commands: ["npm run build"]
         },
         post_build: {
-          commands: [`npm config set _auth=${npmToken}`, "./version_check.sh"]
+          commands: [
+            `npm config set _auth=${npmToken}`,
+            "chmod +x version_check.sh",
+            "./version_check.sh"
+          ]
         }
       }
     }
