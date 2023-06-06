@@ -25,5 +25,6 @@ export class YourStack extends Stack {
                 StorageVals: AppStorage.vals
             }
         })
+        new CfnOutput(this, "CDK-Exports", { value: FrontEnd.CDK_EXPORTS })
     }
 }
