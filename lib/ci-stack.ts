@@ -26,7 +26,7 @@ export class CamplifyCiStack extends Stack {
       actionName: `Camplify-Versions--Pull-Source`,
       owner: "master-harvey",
       repo: "Camplify",
-      branch: "Infra",
+      branch: "CDKV2",
       output: sourceCode,
       trigger: cpa.GitHubTrigger.WEBHOOK
     })
