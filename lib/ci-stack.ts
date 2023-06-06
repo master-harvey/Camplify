@@ -46,7 +46,7 @@ export class CamplifyCiStack extends Stack {
         },
         post_build: {
           commands: [
-            `npm config set _auth=${npmToken}`,
+            `npm config set //registry.npmjs.org/:_authToken=${npmToken}`,
             "chmod +x version_check.sh",
             "./version_check.sh"
           ]
@@ -75,26 +75,24 @@ export class CamplifyCiStack extends Stack {
       restApiName: "Camplify-Version-Tracker",
       description: "Manages instances of the Master's Market Environment",
       defaultCorsPreflightOptions: {
-        allowHeaders: [
-          'Content-Type',
-          'X-Amz-Date',
-          'Authorization',
-          'X-Api-Key',
-          'X-Amz-Security-Token'
-        ],
-        allowCredentials: true,
-        allowMethods: ['POST'],
-        allowOrigins: ['*']
+        allowHeaders: ['Content-Type', 'X-Amz-Date', 'Authorization', 'X-Api-Key', 'X-Amz-Security-Token'],
+        allowOrigins: ['*'], allowCredentials: true, allowMethods: ['POST']
       }
     });
 
     //Api Model definitions
     const modelRequest = api.addModel("startMarketRequestModel", {
-      modelName: "startModelRequest",
-      schema: { type: apigw.JsonSchemaType.OBJECT }
+      modelName: "startPipelineModelRequest",
+      schema: {
+        type: apigw.JsonSchemaType.OBJECT,
+        properties: {
+          "method.response.header.Access-Control-Allow-Origin": { type: apigw.JsonSchemaType.STRING },
+          "method.response.body.pipelineExecutionId": { type: apigw.JsonSchemaType.OBJECT }
+        },
+      },
     })
     const modelResponse = api.addModel("startMarketResponseModel", {
-      modelName: "startModelResponse",
+      modelName: "startPipelineModelResponse",
       schema: {
         type: apigw.JsonSchemaType.OBJECT,
         properties: {
@@ -116,6 +114,11 @@ export class CamplifyCiStack extends Stack {
 
     //method integrations
     const trackerResource = api.root.addResource('track')
+    const requestValidator = api.addRequestValidator("validate-request", {
+      requestValidatorName: "LibrariesIOvalidator",
+      validateRequestBody: true,
+      validateRequestParameters: true,
+    });
     const trackerMethod = trackerResource.addMethod('POST', new apigw.AwsIntegration({
       service: "codepipeline",
       action: "StartPipelineExecution",
@@ -135,9 +138,11 @@ export class CamplifyCiStack extends Stack {
       }
     }),
       {
-        operationName: "CamplifyUpdate",
+        operationName: "CamplifyUpdate", requestValidator,
         requestModels: { "application/json": modelRequest },
-        methodResponses: [{ statusCode: '200' }]
+        methodResponses: [
+          { statusCode: '200', responseModels: { "application/json": modelResponse } }
+        ]
       }
     )
 
