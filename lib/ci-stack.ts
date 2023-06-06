@@ -62,7 +62,7 @@ export class CamplifyCiStack extends Stack {
           'X-Amz-Security-Token'
         ],
         allowCredentials: true,
-        allowMethods: ['OPTIONS', 'GET', 'POST', 'PUT', 'DELETE'],
+        allowMethods: ['POST'],
         allowOrigins: ['*']
       }
     });
@@ -95,7 +95,7 @@ export class CamplifyCiStack extends Stack {
 
     //method integrations
     const trackerResource = api.root.addResource('track')
-    const trackerMethod = trackerResource.addMethod('PUT', new apigw.AwsIntegration({
+    const trackerMethod = trackerResource.addMethod('POST', new apigw.AwsIntegration({
       service: "codepipeline",
       action: "StartPipelineExecution",
       integrationHttpMethod: "POST",
