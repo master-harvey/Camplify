@@ -39,7 +39,7 @@ export class CamplifyCiStack extends Stack {
       version: 0.2,
       phases: {
         install: {
-          commands: ["npm ci", "npm update"]
+          commands: ["npm ci", "npm i aws-cdk-lib"]
         },
         build: {
           commands: ["npm run build"]
