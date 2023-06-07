@@ -28,7 +28,7 @@ if [ $cdk_minor -eq $camplify_minor ]; then
   # Increase the camplify patch version
   new_patch=$(expr $camplify_patch + 1)
   new_version="${cdk_major}.${cdk_minor}.${new_patch}"
-  npm version 
+  npm version $new_version
 else
   # Make the camplify minor version match aws-cdk-lib with patch number 0
   new_version="${cdk_major}.${cdk_minor}.0"
